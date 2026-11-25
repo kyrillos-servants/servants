@@ -437,7 +437,7 @@ return '<h2>سجل الحضور</h2><p class="sm" style="margin-top:-6px">دوس
 /* kids app tab + broadcast */
 var KD=null,KA=null;
 function ck(o,ok,er){if(!SRVMODE){lead(o,ok);return}if(!svOn()){toast('اربط السيرفر الأول');return}if(!SM.sid){slShow();return}o.me=SM.sid;o.mpw=SM.pw;sPost(o).then(function(r){if(r&&r.ok){if(ok)ok(r)}else if(r&&r.err=='badkey'){SM.sid=0;SM.pw='';slSave();toast('ادخل تاني بالرقم السري');slShow()}else if(r&&r.err=='locked')toast('جربت كتير غلط، استنى ربع ساعة');else if(r&&r.err=='notyours'&&er)er(r);else toast('حصل خطأ')}).catch(function(){toast('مفيش نت')})}
-function kdLoad(){ck({action:SRVMODE?'adminContent':'adminKids'},function(r){KD=r;render()});if(!SRVMODE)lead({action:'adminAlerts'},function(r){KA=r.alerts||[];render()})}
+function kdLoad(){ck({action:SRVMODE?'adminContent':'adminKids'},function(r){KD=r;render()});if(!SRVMODE)lead({action:'adminAlerts'},function(r){KA=r.alerts||[];render();flLoadL()})}
 function kdPw(id){var v=prompt('رقم سري جديد (٣ أرقام على الأقل)');if(!v)return;lead({action:'setPw',sid:id,pw:v.trim()},function(){KD&&(KD.codes[id]=v.trim());render();toast('اتغير')})}
 function kdGen(){lead({action:'genPws'},function(r){toast('اتعمل '+(r.made||0)+' رقم');kdLoad()})}
 var HE=null;function hymForm(c){HE=c||null;var o=document.createElement('div');o.id='hf';o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;overflow:auto;padding:12px';o.innerHTML='<div style="background:#fff;border-radius:18px;padding:14px;max-width:520px;margin:0 auto"><h2>🎵 '+(c?'تعديل الترنيمة':'ترنيمة جديدة')+'</h2><input id="hf1" placeholder="اسم الترنيمة" style="width:100%;font:inherit;padding:10px;border:1px solid #ccc;border-radius:12px;margin:4px 0"><textarea id="hf2" rows="8" placeholder="الصق الكلمات هنا. سطر فاضي بين كل مقطع. اكتب (القرار:) قبل اللازمة." style="width:100%;font:inherit;padding:10px;border:1px solid #ccc;border-radius:12px;margin:4px 0" oninput="hymPrev()"></textarea><input id="hf3" placeholder="لينك الترنيمة (اختياري)" style="width:100%;font:inherit;padding:10px;border:1px solid #ccc;border-radius:12px;margin:4px 0"><p class="sm">شكلها عند الأطفال:</p><div id="hf4" style="background:#fbf6e9;border-radius:14px;padding:6px;max-height:260px;overflow:auto"></div><button class="btn" onclick="hymSave()">حفظ وإرسال</button><button class="btn" style="background:#999" onclick="document.getElementById(\'hf\').remove()">إلغاء</button></div>';document.body.appendChild(o);if(c){document.getElementById('hf1').value=c.title;document.getElementById('hf2').value=c.body;document.getElementById('hf3').value=c.url;hymPrev()}}
@@ -465,7 +465,7 @@ function vK(){var h='<h2>🧒 تطبيق المخدومين</h2>';
  if(!SRVMODE){var kp=KD.kidPlan||{plan:'',tot:0},kg=KD.kidProg||{},dn=D.sid.filter(function(i){return (kg[i]||0)>=(+kp.tot||999)}).length;h+='<h2>📖 قراءة المخدومين الأسبوع ده</h2><div class="card"><p class="sm">غير قراءة الخدام. الأطفال بيشوفوها في تطبيقهم ويقروا من الكتاب جوه التطبيق.</p><p><b>'+(kp.plan?esc(kp.plan)+' ('+kp.tot+' أصحاح)':'لسه متحددتش')+'</b></p>'+(kp.tot?'<p class="sm">خلّص المطلوب '+dn+' من '+D.sid.length+' · بدأ '+Object.keys(kg).length+'</p>':'')+'<button class="btn" onclick="kdPlan()">✏️ حدد القراءة</button> <button class="btn" onclick="kdAddCh()">➕ زوّد أصحاح</button> <button class="btn sm" onclick="badScan()">🧹 فحص القراءات الغلط</button></div>'}
  var tn={msg:'💌',video:'🎬',hymn:'🎵',event:'🎉'};
  h+='<h2>المحتوى</h2><div class="card">'+((KD.content||[]).length?KD.content.slice().reverse().map(function(c){return '<div class="li"><span>'+tn[c.type]+' '+esc(c.title)+(c.type=='hymn'?' ('+(KD.votes[c.id]||0)+' صوت)':'')+'</span><button class="btn sm" onclick="kdHide(\''+c.id+'\','+(c.active?0:1)+')">'+(c.active?'إخفاء':'إظهار')+'</button> <button class="btn sm" onclick="kdEdit(\''+c.id+'\')">تعديل</button> <button class="btn sm" style="background:#c0392b" onclick="kdDel(\''+c.id+'\')">مسح</button></div>'}).join(''):'<p class="sm">فاضي</p>')+'</div>';
- if(SRVMODE)return h;
+ if(SRVMODE)return h;h+=flLeader();
  h+='<h2>🔔 تنبيهات الخدام</h2><div class="card"><button class="btn" onclick="alForm()">🔔 ابعت تنبيه (لكل الخدام أو لخادم)</button>'+((KA||[]).length?KA.slice().reverse().map(function(a){var to=a.to=='0'?'كل الخدام':(D.servants[D.rid.indexOf(+a.to)]||'خادم');return '<div class="li"><span>🔔 '+esc(a.title)+' <span class="sm">← '+esc(to)+'</span></span><button class="btn sm" style="background:#c0392b" onclick="alDel(\''+a.id+'\')">مسح</button></div>'}).join(''):'<p class="sm">لسه مفيش تنبيهات.</p>')+'</div>';
  h+='<h2>الأرقام السرية للخدام</h2><div class="card">'+D.servants.map(function(n,i){var id=D.rid[i];return '<div class="li"><span>'+esc(n)+'</span><span><b>'+((KD.codes||{})[id]||'—')+'</b> <button class="btn sm" onclick="kdPw('+id+')">تغيير</button></span></div>'}).join('')+'</div>';
  h+='<h2>الأرقام السرية</h2><div class="card">'+D.served.map(function(n,i){var id=D.sid[i];return '<div class="li"><span>'+esc(n)+'</span><span><b>'+((KD.codes||{})[id]||'—')+'</b> <button class="btn sm" onclick="kdPw('+id+')">تغيير</button></span></div>'}).join('')+'</div>';
@@ -473,6 +473,47 @@ function vK(){var h='<h2>🧒 تطبيق المخدومين</h2>';
 function kdPlan(){var kp=(KD&&KD.kidPlan)||{plan:'',tot:0},p=prompt('المطلوب من المخدومين الأسبوع ده (مثال: إنجيل يوحنا ١ إلى ٣)',kp.plan||'');if(p==null)return;var t=prompt('عدد الأصحاحات المطلوبة (رقم)',kp.tot||'');if(t==null)return;t=parseInt(t,10)||0;lead({action:'setKidPlan',plan:p.trim(),tot:t},function(r){toast(!p.trim()?'اتحفظت ✓':r&&r.nkeys?'اتحفظت ✓ فهمت '+r.nkeys+' أصحاح':'⚠️ مش فاهم الخطة. اكتبها زي: إنجيل يوحنا ١ إلى ٣');kdLoad()})}
 function msgSend(){var t=prompt('اكتب الرسالة اللي هتظهر لكل الأطفال');if(!t)return;ck({action:'sendMsg',title:t,by:'القائد'},function(){toast('اتبعتت لكل الأطفال 💌');confetti();if(KD)kdLoad()})}
 function vM(){return '<h2>💌 رسالة لكل الأطفال</h2><div class="card"><p class="sm">الرسالة هتظهر في تطبيق الأطفال على لسان البابا كيرلس.</p><button class="btn" onclick="msgSend()">اكتب وابعت</button></div>'}
+
+
+/* files: leader sends PDF/Word/PowerPoint to servants */
+var KF=null,FL=null,FLT=0,FSEEN=+(localStorage.getItem('fseen')||0),FU={busy:false,stop:false,f:null};
+function flIcon(e){return e=='pdf'?'📕':(e=='doc'||e=='docx')?'📘':'📙'}
+function flSz(n){return n>=1048576?(n/1048576).toFixed(1)+' ميجا':Math.max(1,Math.round(n/1024))+' كيلو'}
+function flDl(u){var m=/\/d\/([\w-]+)/.exec(u||'');return m?'https://drive.google.com/uc?export=download&id='+m[1]:u}
+function flRow(f,mine){var nw=!mine&&+f.id>FSEEN;return '<div class="li" style="'+(nw?'background:#fffbea;border-radius:10px;padding:6px':'')+'"><span>'+flIcon(f.ext)+' '+(nw?'🆕 ':'')+esc(f.title)+'<br><span class="sm">'+esc(f.date||'')+(f.size?' · '+flSz(f.size):'')+(f.by?' · '+esc(f.by):'')+'</span></span><span><a class="btn sm" href="'+esc(f.url)+'" target="_blank" rel="noopener">فتح</a> <a class="btn sm" href="'+esc(flDl(f.url))+'" target="_blank" rel="noopener">تحميل</a>'+(mine?' <button class="btn sm" style="background:#c0392b" onclick="flDel(\''+f.id+'\')">مسح</button>':'')+'</span></div>'}
+function flLoad(){if(!svOn()||!SM.sid)return;sPost({action:'filesList',me:SM.sid,mpw:SM.pw}).then(function(r){FL=(r&&r.ok&&r.files)?r.files:(FL||[]);render()}).catch(function(){FL=FL||[]})}
+function flCard(){if(!FLT||Date.now()-FLT>60000){FLT=Date.now();flLoad()}
+ var h='<h2>📁 ملفات من القائد</h2><div class="card">';
+ if(FL===null)h+='<p class="sm">بيحمّل...</p>';else if(!FL.length)h+='<p class="sm">مفيش ملفات لسه.</p>';else{h+=FL.slice().reverse().map(function(f){return flRow(f,false)}).join('');var mx=0;FL.forEach(function(f){mx=Math.max(mx,+f.id)});if(mx>FSEEN){FSEEN=mx;try{localStorage.setItem('fseen',mx)}catch(e){}}}
+ return h+'</div>'}
+function flLoadL(){if(!svOn()||!LK)return;sPost({action:'filesList',key:LK}).then(function(r){if(r&&r.ok){KF=r.files||[];render()}}).catch(function(){})}
+function flDel(id){if(!confirm('تمسح الملف ده نهائي؟ الخدام مش هيشوفوه تاني.'))return;lead({action:'deleteContent',id:id},function(){toast('اتمسح');flLoadL()})}
+function flLeader(){var h='<h2>📁 ملفات للخدام</h2><div class="card"><p class="sm">ابعت PDF أو Word أو PowerPoint. الخدام هيلاقوه في تبويب «ملفات وتنبيهات» ويفتحوه أو ينزلوه.</p><button class="btn" onclick="fuOpen()">📤 ارفع ملف</button>';
+ if(KF&&KF.length)h+=KF.slice().reverse().map(function(f){return flRow(f,true)}).join('');else if(KF)h+='<p class="sm">مفيش ملفات مرفوعة.</p>';
+ return h+'</div>'}
+function fuOpen(){var o=document.getElementById('fup');if(o)o.remove();o=document.createElement('div');o.id='fup';o.style.cssText='position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px';
+ o.innerHTML='<div style="background:#fff;border-radius:18px;padding:18px;width:min(94vw,440px);direction:rtl;text-align:center"><h3 style="margin:0 0 10px">📁 ملف جديد للخدام</h3><input id="fun" placeholder="اسم الملف (يظهر للخدام)" style="width:100%;padding:10px;border:2px solid #c9a24b;border-radius:12px;font:inherit;box-sizing:border-box"><input id="fuf" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" style="width:100%;margin:10px 0"><div id="fue" style="color:#c0392b;min-height:20px;font-weight:700"></div><div id="fub" style="display:none;background:#eee;border-radius:8px;height:12px;overflow:hidden;margin:6px 0"><div id="fup2" style="height:100%;width:0;background:#c9a24b"></div></div><div id="fui" class="sm"></div><button class="btn pri" id="fug" style="width:100%" onclick="fuGo()">ارفع</button><button class="btn" style="width:100%;background:#999;margin-top:6px" onclick="fuStop()">إلغاء</button></div>';document.body.appendChild(o);
+ document.getElementById('fuf').onchange=function(){var f=this.files[0];FU.f=f||null;var n=document.getElementById('fun');if(f&&!n.value)n.value=f.name.replace(/\.[^.]+$/,'')}}
+function fuStop(){FU.stop=true;if(!FU.busy){var o=document.getElementById('fup');if(o)o.remove()}}
+function fuErr(m){document.getElementById('fue').textContent=m;FU.busy=false;document.getElementById('fug').disabled=false}
+function fuGo(){if(FU.busy)return;var n=document.getElementById('fun').value.trim(),f=FU.f;document.getElementById('fue').textContent='';
+ if(!f){fuErr('اختار ملف الأول');return}if(!n){fuErr('اكتب اسم الملف');return}
+ var ex=(/\.([A-Za-z0-9]+)$/.exec(f.name)||[0,''])[1].toLowerCase();if(['pdf','doc','docx','ppt','pptx'].indexOf(ex)<0){fuErr('الملف لازم يكون PDF أو Word أو PowerPoint');return}
+ if(f.size>52428800){fuErr('الملف كبير (أقصى حجم 50 ميجا)');return}
+ if(!svOn()){fuErr('اربط السيرفر الأول');return}
+ if(!LK){var kk=prompt('كلمة سر القائد');if(!kk){fuErr('محتاج كلمة سر القائد');return}LK=kk.trim()}
+ FU.busy=true;FU.stop=false;document.getElementById('fug').disabled=true;document.getElementById('fub').style.display='block';
+ vuSend({action:'fileInit',name:f.name,size:f.size},1).then(function(r){try{localStorage.setItem('lk',LK)}catch(e){}
+  var CH=786432,pos=0,L=document.getElementById('fui');
+  (function next(){if(FU.stop){FU.busy=false;var o=document.getElementById('fup');if(o)o.remove();toast('اتلغى الرفع');return}
+   if(pos>=f.size){fuErr('حصلت مشكلة، جرب تاني');return}
+   var end=Math.min(pos+CH,f.size),fr=new FileReader();
+   fr.onerror=function(){fuErr('مش قادر أقرا الملف')};
+   fr.onload=function(){vuSend({action:'vidChunk',session:r.session,start:pos,total:f.size,data:vuB64(fr.result)},3).then(function(x){pos=end;var p=Math.round(pos*100/f.size);document.getElementById('fup2').style.width=p+'%';L.textContent='⬆ '+p+'% ('+(pos/1048576).toFixed(1)+' من '+(f.size/1048576).toFixed(1)+' ميجا)';
+    if(x.done){lead({action:'addContent',type:'file',title:n,url:x.url,body:ex+'|'+f.size,by:'القائد'},function(){FU.busy=false;var o=document.getElementById('fup');if(o)o.remove();toast('✅ الملف اتبعت للخدام');flLoadL()});return}
+    next()}).catch(function(e){fuErr(e=='badkey'?'كلمة السر غلط أو الحساب مقفول':'النت قطع أو السيرفر رفض. اضغط ارفع تاني.')})};
+   fr.readAsArrayBuffer(f.slice(pos,end))})()
+ }).catch(function(e){if(e=='badkey')LK='';fuErr(e=='badkey'?'كلمة السر غلط أو الحساب مقفول':'السيرفر مش جاهز لرفع الملفات أو النت ضعيف')})}
 
 /* servant login, alerts, ticker */
 var SM={sid:+(localStorage.getItem('smid')||0),pw:localStorage.getItem('smpw')||''},SA=[],SSEEN=+(localStorage.getItem('sseen')||0),slErr='';
@@ -508,7 +549,7 @@ function sBan(){var un=(SA||[]).filter(function(a){return +a.id>SSEEN}),e=docume
  e.innerHTML='<b style="flex:1;line-height:1.6">🔔 '+esc(l.title)+(un.length>1?' (+'+(un.length-1)+')':'')+'<div style="font-weight:400;font-size:13px;color:#7b867f">'+(l.to=='0'?'تنبيه من القائد للكل':'تنبيه من القائد ليك')+'</div></b><button style="border:0;background:#eee;border-radius:50%;width:32px;height:32px;font-size:16px">✕</button>';
  e.onclick=function(ev){var mx=0;SA.forEach(function(a){mx=Math.max(mx,+a.id)});SSEEN=mx;try{localStorage.setItem('sseen',mx)}catch(x){}e.remove();if(!(ev.target&&ev.target.tagName=='BUTTON')){tab='al';render();window.scrollTo(0,0)}};document.body.appendChild(e)}
 function alUnread(){return SA.filter(function(a){return +a.id>SSEEN}).length}
-function vAl(){var h='<h2>🔔 تنبيهات من القائد</h2>';if(!SA.length)h+='<div class="card sm">مفيش تنبيهات.</div>';
+function vAl(){var h=flCard()+'<h2>🔔 تنبيهات من القائد</h2>';if(!SA.length)h+='<div class="card sm">مفيش تنبيهات.</div>';
  else h+=SA.slice().reverse().map(function(a){var nw=+a.id>SSEEN;return '<div class="card" style="'+(nw?'border:2px solid #d9a93c;background:#fffbea':'')+'"><b>'+(nw?'🆕 ':'')+esc(a.title)+'</b><span class="sm" style="float:left">'+(a.to=='0'?'للكل':'ليك أنت')+' · '+esc(a.date)+'</span>'+(a.body?'<p style="white-space:pre-wrap">'+esc(a.body)+'</p>':'')+'</div>'}).join('');
  var mx=0;SA.forEach(function(a){mx=Math.max(mx,+a.id)});if(mx>SSEEN){SSEEN=mx;try{localStorage.setItem('sseen',mx)}catch(e){}setTimeout(render,1500)}
  return h+'<div class="card"><button class="btn" style="background:#999" onclick="slOut()">🚪 خروج</button></div>'}
@@ -521,7 +562,7 @@ function mqSet(){var v=document.querySelector('.verse');if(!v||!SRVMODE)return;v
  var s=document.getElementById('mqs'),t=D.verse||'لم تتحدد آية الأسبوع بعد';if(s.getAttribute('data-t')!==t){s.setAttribute('data-t',t);s.textContent='✝️  '+t+'  ✝️';var w=m.clientWidth||300;s.style.setProperty('--w',w+'px');s.style.animation='none';void s.offsetWidth;s.style.animation='mq '+Math.max(14,Math.round((t.length*0.35)+w/30))+'s linear infinite'}}
 if(SRVMODE){var st_=document.createElement('style');st_.textContent='@keyframes sbd{from{transform:translate(-50%,-140%)}to{transform:translate(-50%,0)}}@keyframes mq{from{transform:translateX(-100%)}to{transform:translateX(var(--w,320px))}}.verse{display:flex;align-items:center;gap:8px}.verse b{white-space:nowrap}';document.head.appendChild(st_);setInterval(function(){mqSet();slCheck();sBan()},900);setInterval(function(){if(!document.hidden)slPoll()},60000);setTimeout(slPoll,2500);var setMe0=setMe;setMe=function(v){if(SM.sid){var ix=D.rid.indexOf(SM.sid);if(ix>=0)v=ix}setMe0(v)}}
 
-tabs=SRVMODE?[['home','🏠','الرئيسية'],['kv','👀','معاينة'],['att','✅','الغياب'],['hist','📈','السجل'],['bible','📜','الكتاب'],['tr','🚌','الرحلات'],['kid','🧒','المخدومين'],['al','🔔','تنبيهات']]:[['home','🏠','الرئيسية'],['kv','👀','معاينة'],['att','✅','الغياب'],['hist','📈','السجل'],['bible','📜','الكتاب'],['read','📖','القراءة'],['sch','📅','الجدول'],['ppl','👥','الأسماء'],['ev','📝','التقييم'],['tr','🚌','الرحلات'],['kid','🧒','المخدومين']];
+tabs=SRVMODE?[['home','🏠','الرئيسية'],['kv','👀','معاينة'],['att','✅','الغياب'],['hist','📈','السجل'],['bible','📜','الكتاب'],['tr','🚌','الرحلات'],['kid','🧒','المخدومين'],['al','📁','ملفات وتنبيهات']]:[['home','🏠','الرئيسية'],['kv','👀','معاينة'],['att','✅','الغياب'],['hist','📈','السجل'],['bible','📜','الكتاب'],['read','📖','القراءة'],['sch','📅','الجدول'],['ppl','👥','الأسماء'],['ev','📝','التقييم'],['tr','🚌','الرحلات'],['kid','🧒','المخدومين']];
 if(svOn()){D.cfg={w:curW()};render();flush();sync()}
 (function(){var v=document.getElementById('vs');if(v&&SRVMODE){v.readOnly=true;v.placeholder='لم تتحدد آية الأسبوع بعد'}})();
 
