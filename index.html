@@ -471,7 +471,7 @@ function mqSet(){var v=document.querySelector('.verse');if(!v||!SRVMODE)return;v
  var s=document.getElementById('mqs'),t=D.verse||'لم تتحدد آية الأسبوع بعد';if(s.getAttribute('data-t')!==t){s.setAttribute('data-t',t);s.textContent='✝️  '+t+'  ✝️';var w=m.clientWidth||300;s.style.setProperty('--w',w+'px');s.style.animation='none';void s.offsetWidth;s.style.animation='mq '+Math.max(14,Math.round((t.length*0.35)+w/30))+'s linear infinite'}}
 if(SRVMODE){var st_=document.createElement('style');st_.textContent='@keyframes sbd{from{transform:translate(-50%,-140%)}to{transform:translate(-50%,0)}}@keyframes mq{from{transform:translateX(-100%)}to{transform:translateX(var(--w,320px))}}.verse{display:flex;align-items:center;gap:8px}.verse b{white-space:nowrap}';document.head.appendChild(st_);setInterval(function(){mqSet();slCheck();sBan()},900);setInterval(function(){if(!document.hidden)slPoll()},60000);setTimeout(slPoll,2500);var setMe0=setMe;setMe=function(v){if(SM.sid){var ix=D.rid.indexOf(SM.sid);if(ix>=0)v=ix}setMe0(v)}}
 
-tabs=SRVMODE?[['home','🏠','الرئيسية'],['att','✅','الغياب'],['hist','📈','السجل'],['bible','📜','الكتاب'],['tr','🚌','الرحلات'],['kid','🧒','المخدومين'],['kv','👀','عرض المخدومين'],['al','🔔','تنبيهات']]:[['home','🏠','الرئيسية'],['att','✅','الغياب'],['hist','📈','السجل'],['bible','📜','الكتاب'],['read','📖','القراءة'],['sch','📅','الجدول'],['ppl','👥','الأسماء'],['ev','📝','التقييم'],['tr','🚌','الرحلات'],['kid','🧒','المخدومين'],['kv','👀','عرض المخدومين']];
+tabs=SRVMODE?[['home','🏠','الرئيسية'],['kv','👀','معاينة'],['att','✅','الغياب'],['hist','📈','السجل'],['bible','📜','الكتاب'],['tr','🚌','الرحلات'],['kid','🧒','المخدومين'],['al','🔔','تنبيهات']]:[['home','🏠','الرئيسية'],['kv','👀','معاينة'],['att','✅','الغياب'],['hist','📈','السجل'],['bible','📜','الكتاب'],['read','📖','القراءة'],['sch','📅','الجدول'],['ppl','👥','الأسماء'],['ev','📝','التقييم'],['tr','🚌','الرحلات'],['kid','🧒','المخدومين']];
 if(svOn()){D.cfg={w:curW()};render();flush();sync()}
 (function(){var v=document.getElementById('vs');if(v&&SRVMODE){v.readOnly=true;v.placeholder='لم تتحدد آية الأسبوع بعد'}})();
 
@@ -566,6 +566,8 @@ function kvShow(){var e=document.getElementById('kve');if(e)e.textContent=KVE}
 function vKV(){if(!svOn())return '<h2>👀 عرض المخدومين</h2><div class="card">اربط السيرفر الأول</div>';
 KVD=null;setTimeout(kvLoad,0);
 return '<div class="card sm" style="text-align:center;margin:4px 0;padding:6px">👀 ده اللي المخدومين بيشوفوه (معاينة بس، مفيش تسجيل أو تصويت)</div><div id="kve" class="sm" style="color:#b00;text-align:center"></div><iframe id="kvf" src="kids.html?preview=1" style="width:100%;height:calc(100vh - 230px);min-height:420px;border:2px solid #d9a93c;border-radius:14px;background:#fff"></iframe>'}
+
+(function(){var s=document.createElement('style');s.textContent='.tabs{overflow-x:auto;justify-content:flex-start!important;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tabs button{flex:1 0 auto!important;min-width:58px;padding-left:6px!important;padding-right:6px!important;white-space:nowrap}';document.head.appendChild(s)})();
 
 render();onScroll();
 </script></body></html>
