@@ -684,4 +684,74 @@ if(!k4){fin();return}return sPost({action:'adminAlerts',key:k}).then(function(r2
 draw();document.body.appendChild(o)})();
 tabs.push(['teach','👨‍🏫','الشرح']);
 render();onScroll();
-</script><script>(function(){if(/preview/.test(location.search))return;var b=document.createElement('button');b.id='afk-out';b.textContent='🚪 خروج';b.style.cssText='position:fixed;top:8px;left:8px;z-index:90;display:none;border:0;border-radius:18px;padding:7px 12px;font:700 13px sans-serif;background:rgba(0,0,0,.6);color:#fff';document.body.appendChild(b);b.onclick=function(){if(confirm('تسجيل الخروج؟')){if(SRVMODE){slOut()}else{localStorage.removeItem('lname');localStorage.removeItem('lsid');location.reload()}}};setInterval(function(){var o=false;try{o=(SRVMODE?(SM.sid>0):!!localStorage.getItem('lname'))}catch(e){}b.style.display=o?'block':'none'},700)})();</script></body></html>
+</script><script>(function(){if(/preview/.test(location.search))return;var b=document.createElement('button');b.id='afk-out';b.textContent='🚪 خروج';b.style.cssText='position:fixed;top:8px;left:8px;z-index:90;display:none;border:0;border-radius:18px;padding:7px 12px;font:700 13px sans-serif;background:rgba(0,0,0,.6);color:#fff';document.body.appendChild(b);b.onclick=function(){if(confirm('تسجيل الخروج؟')){if(SRVMODE){slOut()}else{localStorage.removeItem('lname');localStorage.removeItem('lsid');location.reload()}}};setInterval(function(){var o=false;try{o=(SRVMODE?(SM.sid>0):!!localStorage.getItem('lname'))}catch(e){}b.style.display=o?'block':'none'},700)})();</script><script>
+(function(){
+var MN=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function dig(s){return String(s).replace(/\d/g,function(d){return '٠١٢٣٤٥٦٧٨٩'[d]})}
+function b64(u8){var s='',i,n=u8.length,ch=8192;for(i=0;i<n;i+=ch)s+=String.fromCharCode.apply(null,u8.subarray(i,i+ch));return btoa(s)}
+function pdfBuild(jpgs,W,H){var parts=[],off=[],len=0,enc=new TextEncoder();function put(x){var u=typeof x=='string'?enc.encode(x):x;parts.push(u);len+=u.length}
+function obj(n,body){off[n]=len;put(n+' 0 obj\n'+body+'\nendobj\n')}
+put('%PDF-1.4\n');var N=jpgs.length,pw=595,ph=Math.round(595*H/W);
+obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+var kids=[];for(var i=0;i<N;i++)kids.push((3+i*3)+' 0 R');
+obj(2,'<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+N+' >>');
+for(var i=0;i<N;i++){var p=3+i*3,c=p+1,im=p+2;
+obj(p,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+pw+' '+ph+'] /Contents '+c+' 0 R /Resources << /XObject << /Im'+i+' '+im+' 0 R >> >> >>');
+var cs='q '+pw+' 0 0 '+ph+' 0 0 cm /Im'+i+' Do Q';obj(c,'<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream');
+off[im]=len;put(im+' 0 obj\n<< /Type /XObject /Subtype /Image /Width '+W+' /Height '+H+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpgs[i].length+' >>\nstream\n');put(jpgs[i]);put('\nendstream\nendobj\n')}
+var xr=len,tot=3+N*3;put('xref\n0 '+tot+'\n0000000000 65535 f \n');for(var k=1;k<tot;k++)put(('0000000000'+off[k]).slice(-10)+' 00000 n \n');
+put('trailer\n<< /Size '+tot+' /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF');
+var out=new Uint8Array(len),o=0;parts.forEach(function(u){out.set(u,o);o+=u.length});return out}
+function dataU8(c){var d=c.toDataURL('image/jpeg',0.85).split(',')[1],b=atob(d),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+window.pdfMonth=function(){
+ try{
+ var mk=String(date).slice(0,7),parts=mk.split('-'),mname=MN[+parts[1]-1]+' '+parts[0];
+ var dset={};Object.keys(D.att||{}).forEach(function(d){if(d.slice(0,7)==mk)dset[d]=1});
+ var PX=(D.attx&&D.attx.prayer)||{};Object.keys(PX).forEach(function(d){if(d.slice(0,7)==mk)dset[d]=1});
+ var dates=Object.keys(dset).sort();
+ if(!dates.length){toast('مفيش غياب متسجل في الشهر ده');return}
+ var W=1240,H=1754,M=70,pages=[],cv,cx,y;
+ var FF="'CairoE','Cairo',sans-serif";
+ function np(){cv=document.createElement('canvas');cv.width=W;cv.height=H;cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,W,H);cx.direction='rtl';cx.textAlign='right';cx.textBaseline='alphabetic';pages.push(cv);y=M+40}
+ function tx(t,sz,col,bold,x){cx.font=(bold?'700 ':'400 ')+sz+'px '+FF;cx.fillStyle=col||'#222';cx.fillText(t,x==null?W-M:x,y)}
+ function wrap(t,sz,maxw){cx.font='400 '+sz+'px '+FF;var w=t.split(' '),ls=[],l='';w.forEach(function(x){var tt=l?l+' '+x:x;if(cx.measureText(tt).width>maxw&&l){ls.push(l);l=x}else l=tt});if(l)ls.push(l);return ls}
+ function need(h){if(y+h>H-M)np()}
+ function line(sz,gap,t,col,bold){need(gap);tx(t,sz,col,bold);y+=gap}
+ np();
+ line(46,70,'غياب شهر '+mname,'#0f3a30',true);
+ line(24,44,'AKF قائد · عدد الأسابيع المسجلة: '+dig(dates.length),'#666');
+ cx.fillStyle='#1f9d6b';cx.fillRect(M,y-20,W-2*M,4);y+=20;
+ var cls=[0,1,2];if(inC(3).length)cls.push(3);
+ var stat={};D.served.forEach(function(n,i){stat[i]={m:0,mt:0,p:0,pt:0}});
+ function sect(d,title,rec,isP){
+  line(30,50,title,isP?'#6b3fa0':'#0f3a30',true);
+  var any=false;
+  cls.forEach(function(c){var ix=inC(c);if(!ix.length)return;
+   var taken=false;var p=rec[d]||[];var pres=ix.filter(function(i){return p.indexOf(i)>=0}),abs=ix.filter(function(i){return p.indexOf(i)<0});
+   ix.forEach(function(i){if(isP){stat[i].pt++;if(p.indexOf(i)>=0)stat[i].p++}else{stat[i].mt++;if(p.indexOf(i)>=0)stat[i].m++}});
+   line(26,40,clsN[c]+': حضر '+dig(pres.length)+' من '+dig(ix.length),'#222',true);
+   if(abs.length){var ls=wrap('الغايبين: '+abs.map(function(i){return D.served[i]}).join('، '),24,W-2*M-30);ls.forEach(function(l){need(36);tx(l,24,'#b3261e',false,W-M-30);y+=36})}
+   else{need(36);tx('الكل حاضر ✓',24,'#1f7a4d',false,W-M-30);y+=36}
+   y+=8});
+  y+=10}
+ dates.forEach(function(d){
+  need(300);
+  cx.fillStyle='#eef7f2';cx.fillRect(M,y-34,W-2*M,50);cx.fillStyle='#0f3a30';line(30,60,'أسبوع '+dig(d.slice(8))+' '+MN[+d.slice(5,7)-1],'#0f3a30',true);
+  if(D.att[d])sect(d,'الاجتماع',D.att,false);
+  if(PX[d])sect(d,'الصلاة',PX,true);
+  y+=14});
+ need(200);cx.fillStyle='#1f9d6b';cx.fillRect(M,y-20,W-2*M,4);y+=30;
+ line(36,60,'ملخص الشهر لكل مخدوم','#0f3a30',true);
+ var hasP=Object.keys(PX).some(function(d){return d.slice(0,7)==mk});
+ cls.forEach(function(c){var ix=inC(c);if(!ix.length)return;need(70);line(28,48,clsN[c],'#1f9d6b',true);
+  ix.forEach(function(i){var s=stat[i];var t=D.served[i]+' ··· اجتماع '+dig(s.m)+'/'+dig(s.mt)+(hasP?' · صلاة '+dig(s.p)+'/'+dig(s.pt):'');need(38);tx(t,24,(s.mt&&s.m<s.mt)?'#b3261e':'#222',false,W-M-20);y+=38});y+=12});
+ var jp=pages.map(dataU8),pdf=pdfBuild(jp,W,H),nm='attendance-'+mk+'.pdf',b=b64(pdf),ok=false;
+ try{if(typeof Rem!=='undefined'&&Rem.savePdf)ok=Rem.savePdf(nm,b)}catch(e){}
+ if(ok){toast('✅ اتحفظ في التنزيلات: '+nm);return}
+ try{var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([pdf],{type:'application/pdf'}));a.download=nm;document.body.appendChild(a);a.click();a.remove();toast('تم التنزيل')}catch(e){toast('مشكلة في عمل الـ PDF')}
+ }catch(e){toast('مشكلة في عمل الـ PDF: '+e.message)}
+};
+var vA0=vA;vA=function(){var h=vA0();return SRVMODE?h:h.replace('</h2>','</h2><button class="btn" style="margin:0 0 10px" onclick="pdfMonth()">📄 غياب الشهر PDF</button>')};
+})();
+</script>
+</body></html>
